@@ -6,19 +6,29 @@ Then we will move to using commercial agents
 
 For model access, use the OpenAI compatible API to the ALCF inference endpoints.
 Full documentation can be found [here](https://docs.alcf.anl.gov/services/inference-endpoints/#2-authenticate).
+
+> **Windows / PowerShell setup:** These instructions are written for PowerShell. If you don't have `uv` yet, install it with:
+> ```powershell
+> powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+> ```
+> Then close and reopen PowerShell so `uv` and `uvx` are on your `PATH`.
+
 To authenticate and set your api token, run these commands:
 
+```powershell
+PS> uvx alcf-tokens login inference
+PS> $env:OPENAI_BASE_URL = "https://inference-api.alcf.anl.gov/resource_server/minerva/api/v1"
+PS> $env:OPENAI_API_KEY = (uvx alcf-tokens get-token inference)
 ```
-$ uvx alcf-tokens login inference
-$ export OPENAI_BASE_URL=https://inference-api.alcf.anl.gov/resource_server/minerva/api/v1
-$ export OPENAI_API_KEY=$(uvx alcf-tokens get-token inference)
-```
+
+> **PowerShell note:** `$env:` variables only last for the current PowerShell window. If you open a new terminal (for example, the second terminal in Activity 05), run the two `$env:` lines again there.
+> You can check that a variable is set with `echo $env:OPENAI_BASE_URL`.
 
 Tokens are valid for 48 hours, so re-run the last command if you start getting authentication errors.
 
 All of the scripts default to the `beam-1.0-bf16` model on Minerva. Use `-m/--model` to try a different model.
 The models available on each cluster are listed [here](https://docs.alcf.anl.gov/services/inference-endpoints/models/).
-If you switch to a model on a different cluster (e.g. Sophia, Metis, or Tara), you also need to change `OPENAI_BASE_URL` to that cluster's endpoint.
+If you switch to a model on a different cluster (e.g. Sophia, Metis, or Tara), you also need to change `OPENAI_BASE_URL` to that cluster's endpoint (e.g. `$env:OPENAI_BASE_URL = "https://inference-api.alcf.anl.gov/resource_server/<cluster>/api/v1"`).
 
 All of the commands below should be run from this directory (`activities/day_2`).
 
@@ -30,6 +40,9 @@ The coding agent uses the same native tool calling from the previous class.
 However, instead of implementing a bespoke tool, we will give the agent access to the commandline.
 
 You must write the `edit_file` tool to allow the model to write files, the `run_command` tool to allow the agent to run generic shell commands, and the tool calling loop inside the coding agent loop.
+
+> **Windows note:** On Windows, `subprocess.run(cmd, shell=True)` runs commands with `cmd.exe`, not PowerShell, and models tend to emit bash commands (`ls`, `cat`, `grep`). Think about how to handle this: you could tell the model in the system prompt or tool docstring which shell it is using, or run commands through PowerShell explicitly (e.g. `subprocess.run(["powershell", "-NoProfile", "-Command", cmd], ...)`).
+
 We purposely use commands that were close to the raw model calls to understand how the internals of a coding agent work.
 After you are done, ask it to do two different tasks:
 
@@ -54,15 +67,23 @@ Follow these [instructions](https://docs.alcf.anl.gov/services/inference-endpoin
 
 These two commands should be sufficient. The first installs Pi, the second configures it to use the inference service. 
 
+```powershell
+PS> powershell -c "irm https://pi.dev/install.ps1 | iex"
+PS> alcf-ai agent configure pi
 ```
-$ curl -fsSL https://pi.dev/install.sh | sh
-$ alcf-ai agent configure pi
-```
+
+> **Windows note:** The Pi installer needs Node.js 22.19+ and will offer to install it for you if it's missing. Pi's shell tool uses Git Bash, so accept the installer's offer to install a portable Git (the default), or install Git for Windows yourself. Also accept the offer to add Pi to your `PATH`, then open a new PowerShell window before running `pi`.
+> If you prefer npm: `npm install -g --ignore-scripts @earendil-works/pi-coding-agent`.
+
 ## Write a Skill
 
 Add a skill to the coding agent to perform a computation that's relevant to your domain. If you cannot come up with anything, write a skill for using Globus Compute that we discussed last time.
 
-In the project root directory create a folder `.agents/skills/`.
+In the project root directory create a folder `.agents/skills/`:
+
+```powershell
+PS> New-Item -ItemType Directory -Force .agents\skills
+```
 
 The skill that you create should have this format:
 ```
@@ -122,7 +143,7 @@ uv run python 04_long_context_with_rag.py --papers sample_papers --questions que
 
 We will now connect RAG with Pi to examine how a coding agent can use RAG in a similar context.
 
-Add the MCP server to Pi. Create `.pi/mcp.json` inside of the project root directory. Write a block:
+Add the MCP server to Pi. Create `.pi/mcp.json` inside of the project root directory (`New-Item -ItemType Directory -Force .pi; New-Item .pi\mcp.json`). Write a block:
 ```
 {
   "mcpServers": {
@@ -142,6 +163,8 @@ Add the MCP server to Pi. Create `.pi/mcp.json` inside of the project root direc
 
 
 Make the data directory point to the absolute path to a `chroma` folder in this directory.
+
+> **Windows note:** JSON treats `\` as an escape character, so either use forward slashes (`C:/Users/you/national-lab-agentic-training/activities/day_2/chroma`) or double the backslashes (`C:\\Users\\you\\...`). To print the absolute path, run `New-Item -ItemType Directory -Force chroma; (Resolve-Path chroma).Path` from `activities/day_2`.
 
 Then ask your coding model to "write a python script to ingest the collected papers into the chroma database using the default embedding model" and run the script.
 

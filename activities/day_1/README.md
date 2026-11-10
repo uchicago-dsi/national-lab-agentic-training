@@ -5,19 +5,29 @@ In Day 1, we will investigate model inference, tool-calling, and MCP servers to 
 
 For model access, use the OpenAI compatible API to the ALCF inference endpoints.
 Full documentation can be found [here](https://docs.alcf.anl.gov/services/inference-endpoints/#2-authenticate).
+
+> **Windows / PowerShell setup:** These instructions are written for PowerShell. If you don't have `uv` yet, install it with:
+> ```powershell
+> powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+> ```
+> Then close and reopen PowerShell so `uv` and `uvx` are on your `PATH`.
+
 To authenticate and set your api token, run these commands:
 
+```powershell
+PS> uvx alcf-tokens login inference
+PS> $env:OPENAI_BASE_URL = "https://inference-api.alcf.anl.gov/resource_server/minerva/api/v1"
+PS> $env:OPENAI_API_KEY = (uvx alcf-tokens get-token inference)
 ```
-$ uvx alcf-tokens login inference
-$ export OPENAI_BASE_URL=https://inference-api.alcf.anl.gov/resource_server/minerva/api/v1
-$ export OPENAI_API_KEY=$(uvx alcf-tokens get-token inference)
-```
+
+> **PowerShell note:** `$env:` variables only last for the current PowerShell window. If you open a new terminal (for example, the second terminal in Activity 05), run the two `$env:` lines again there.
+> You can check that a variable is set with `echo $env:OPENAI_BASE_URL`.
 
 Tokens are valid for 48 hours, so re-run the last command if you start getting authentication errors.
 
 All of the scripts default to the `beam-1.0-bf16` model on Minerva. Use `-m/--model` to try a different model.
 The models available on each cluster are listed [here](https://docs.alcf.anl.gov/services/inference-endpoints/models/).
-If you switch to a model on a different cluster (e.g. Sophia, Metis, or Tara), you also need to change `OPENAI_BASE_URL` to that cluster's endpoint.
+If you switch to a model on a different cluster (e.g. Sophia, Metis, or Tara), you also need to change `OPENAI_BASE_URL` to that cluster's endpoint (e.g. `$env:OPENAI_BASE_URL = "https://inference-api.alcf.anl.gov/resource_server/<cluster>/api/v1"`).
 
 All of the commands below should be run from this directory (`activities/day_1`).
 
@@ -104,6 +114,8 @@ Lastly, we will connect an agent with remote compute resources using Globus Comp
 Globus Compute is a library/service that allows you to turn any machine into a function-as-a-service platform. That means that you can deploy globus compute on your HPC cluster, then remotely submit functions to execute code on the cluster --- without setting up SSH tunnels, and without running your agent on the cluster.
 
 First, deploy `globus-compute-endpoint` on a linux machine. If you have access to a linux machine, please run there, otherwise run a docker container (e.g. `docker run -it python:3.13 bash`).
+
+> **Windows note:** `globus-compute-endpoint` does not run natively on Windows. Use a remote Linux machine, WSL (`wsl --install`), or Docker Desktop. The commands below are run *inside* that Linux shell (bash), not in PowerShell. The client script (`06_globus_compute.py`) still runs from PowerShell on your machine.
 
 To set up the endpoint run:
 ```
