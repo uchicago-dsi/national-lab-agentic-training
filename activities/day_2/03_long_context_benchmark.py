@@ -97,7 +97,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--papers', type=Path, required=True, help='Folder of .pdf/.txt papers')
     parser.add_argument('--questions', type=Path, required=True, help='JSON list of {question, answer, category, source_paper}')
-    parser.add_argument('-m', '--model', default='inkling-bf16', help='Model under test')
+    parser.add_argument('-m', '--model', default='beam-1.0-bf16', help='Model under test')
     parser.add_argument('-j', '--judge-model', default='beam-1.0-bf16', help='Model used to grade answers')
     parser.add_argument('-n', '--num-papers', type=int, required=True, help='Number of papers to put in the context')
     parser.add_argument('-p', '--position', type=parse_position, default=0.5,
