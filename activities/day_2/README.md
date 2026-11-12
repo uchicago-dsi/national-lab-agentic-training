@@ -91,7 +91,7 @@ Spot check some of the questions to validate that the answers are reasonable and
 We want to perform two different evaluations. First, there is a benchmarking script that queries a language model and tests its ability to recall information from different places in your context. Look at the parameters of the `03_long_context_benchmark.py` script to examine what you can change and investigate. You can run the script with:
 
 ```
-uv run python 03_long_context_benchmark.py --papers sample_papers --questions questions.json -n 10
+uv run python 03_long_context_benchmark.py --papers sample_papers --questions questions.json -n 10 -p 0.5
 ```
 
 We also want to see how a coding agent navigates these papers when it has the ability to use tools (like find and grep). Start a new Pi session inside the `sample_papers/` folder. Outside of that folder Pi will have access to the questions and the answers, and will likely use them for the task.
