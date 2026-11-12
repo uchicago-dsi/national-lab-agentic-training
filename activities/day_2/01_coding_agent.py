@@ -48,8 +48,17 @@ def edit_file(path: str, old_content: str, new_content: str) -> bool:
     Returns True if the file was edited. Raises ValueError if old_content
     was not found.
     '''
-    # TODO: Implement the edit file functionality in line with the doc string
+    file = Path(path)
+    if old_content == '':
+        file.parent.mkdir(parents=True, exist_ok=True)
+        with file.open('a') as f:
+            f.write(new_content)
+        return True
 
+    content = file.read_text()
+    if old_content not in content:
+        raise ValueError(f"old_content not found in {path}. Read the file to check the exact text.")
+    file.write_text(content.replace(old_content, new_content, 1))
     return True
 
 def run_command(cmd: str) -> str:

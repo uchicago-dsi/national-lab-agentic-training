@@ -29,7 +29,7 @@ This activity is inspired by this [guide](https://www.mihaileric.com/The-Emperor
 The coding agent uses the same native tool calling from the previous class.
 However, instead of implementing a bespoke tool, we will give the agent access to the commandline.
 
-You must write the `edit_file` tool to allow the model to write files, the `run_command` tool to allow the agent to run generic shell commands, and the tool calling loop inside the coding agent loop.
+You must write the `run_command` tool to allow the agent to run generic shell commands, and the tool calling loop inside the coding agent loop.
 We purposely use commands that were close to the raw model calls to understand how the internals of a coding agent work.
 After you are done, ask it to do two different tasks:
 
